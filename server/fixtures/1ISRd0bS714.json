@@ -1,0 +1,1743 @@
+{
+  "videoId": "1ISRd0bS714",
+  "title": "Message Queues in System Design Interviews w/ Meta Staff Engineer",
+  "channel": "Hello Interview",
+  "durationSeconds": 1606,
+  "language": "en-IN",
+  "source": "sarvam-stt",
+  "segments": [
+    {
+      "start": 0.2,
+      "text": "Hey everyone, welcome back to the channel.",
+      "end": 1.9
+    },
+    {
+      "start": 1.9,
+      "text": "For those of you who may be new here, I'm Evan.",
+      "end": 4.2
+    },
+    {
+      "start": 4.2,
+      "text": "I'm a former Meta staff engineer and I'm the current co-founder of hellointerview.",
+      "end": 7.9
+    },
+    {
+      "start": 7.9,
+      "text": "com. If you're currently preparing for software interviews and you probably are if you landed here, then head over to hellointerview.",
+      "end": 13.5
+    },
+    {
+      "start": 13.5,
+      "text": "We have just about everything that you could possibly need, the overwhelming majority of which is totally free.",
+      "end": 19.3
+    },
+    {
+      "start": 19.3,
+      "text": "uh In this video though, we're going to be covering message queues and specifically as always in the context of system design interviews.",
+      "end": 25.7
+    },
+    {
+      "start": 25.7,
+      "text": "And so we're going to start with a motivating example that'll show you why queues exist in the first place.",
+      "end": 29.6
+    },
+    {
+      "start": 29.6,
+      "text": "And then we'll talk all about what a message queue actually is.",
+      "end": 32.2
+    },
+    {
+      "start": 32.2,
+      "text": "How it works under the hood, when you should use one, and then finally we'll get into those deep dives that interviewers love to probe into, things like scaling, back pressure, ordering, durability, all that good stuff.",
+      "end": 43.5
+    },
+    {
+      "start": 43.5,
+      "text": "So, without further ado, let's get after it.",
+      "end": 46.3
+    },
+    {
+      "start": 46.3,
+      "text": "We'll start things off with a little motivating example.",
+      "end": 48.3
+    },
+    {
+      "start": 48.3,
+      "text": "I want you to imagine that you're building a photo sharing app like Instagram.",
+      "end": 52
+    },
+    {
+      "start": 52,
+      "text": "So these are uploads of photo to your server, and then it needs to do a bunch of stuff with that photo.",
+      "end": 57.6
+    },
+    {
+      "start": 57.6,
+      "text": "And so for example, you may need to resize it into multiple different resolutions.",
+      "end": 61.9
+    },
+    {
+      "start": 61.9,
+      "text": "You may need to apply filters, maybe run some kind of content moderation checks in the background to make sure that it's appropriate, it's not nudity, those sorts of things.",
+      "end": 71.4
+    },
+    {
+      "start": 71.4,
+      "text": "And each of those operations takes a couple of seconds each.",
+      "end": 73.6
+    },
+    {
+      "start": 73.6,
+      "text": "In the simplest possible architecture that you could design, what might happen here is that the client uploads the photo to your server, and then your server does all of that work synchronously.",
+      "end": 83.1
+    },
+    {
+      "start": 83.1,
+      "text": "That single server handles all of that work, resizing the images, applying the filters, running the moderation checks, and then once all of that's done and only once all of that's done, it returns the response back to the client.",
+      "end": 93.8
+    },
+    {
+      "start": 93.8,
+      "text": "with the success message.",
+      "end": 94.2
+    },
+    {
+      "start": 94.2,
+      "text": "This this works kind of, uh but it has some real limitations.",
+      "end": 98.3
+    },
+    {
+      "start": 98.3,
+      "text": "The the first is latency.",
+      "end": 100.3
+    },
+    {
+      "start": 100.3,
+      "text": "The user hits upload and then they just stare at a spinner or whatever you put on the client while all of that processing is happening and they're just waiting.",
+      "end": 109.1
+    },
+    {
+      "start": 109.1,
+      "text": "Nobody wants to have to wait 6 seconds just to get that confirmation that they're they're.",
+      "end": 113.6
+    },
+    {
+      "start": 113.6,
+      "text": "They uploaded their photo, right?",
+      "end": 116.2
+    },
+    {
+      "start": 116.2,
+      "text": "The second problem is around how fragile this is.",
+      "end": 119
+    },
+    {
+      "start": 119,
+      "text": "What happens if the filter service maybe crashes halfway through all of that processing?",
+      "end": 124.2
+    },
+    {
+      "start": 124.2,
+      "text": "Well, the whole upload now fails.",
+      "end": 125.5
+    },
+    {
+      "start": 125.5,
+      "text": "Now the user ends up getting an error with a message maybe to retry, and that resizing work that we already did is now totally lost too, and we have to start from scratch.",
+      "end": 135.5
+    },
+    {
+      "start": 135.5,
+      "text": "And then the third one is is a big one.",
+      "end": 138.3
+    },
+    {
+      "start": 138.3,
+      "text": "How do you manage really bursty traffic?",
+      "end": 140.7
+    },
+    {
+      "start": 140.7,
+      "text": "So imagine that for example, your app gets featured in the App Store.",
+      "end": 144.6
+    },
+    {
+      "start": 144.6,
+      "text": "Super cool. But now your upload spike from what was maybe 50 a second to 5000 or 50000 or 500000 a second.",
+      "end": 152
+    },
+    {
+      "start": 152,
+      "text": "And your servers, they can't handle more than maybe 200 per second.",
+      "end": 157.2
+    },
+    {
+      "start": 157.2,
+      "text": "And so those other 4800, right, they're just timing out or they're failing or the user gets an error.",
+      "end": 164.2
+    },
+    {
+      "start": 164.2,
+      "text": "Your system's basically falling over under the load because it can't handle this new huge throughput.",
+      "end": 171.3
+    },
+    {
+      "start": 171.3,
+      "text": "So with all of that in mind, let me show you how we can solve each of these problems by introducing a message queue.",
+      "end": 177.2
+    },
+    {
+      "start": 177.2,
+      "text": "Instead of processing that photo immediately, what if when that upload comes in, your server just saves the file and writes a message to a queue?",
+      "end": 185.6
+    },
+    {
+      "start": 185.6,
+      "text": "The message is something simple, like, hey, photo 456 needs processing.",
+      "end": 189.9
+    },
+    {
+      "start": 189.9,
+      "text": "And then our server can immediately respond back to the client saying that it's done.",
+      "end": 193.9
+    },
+    {
+      "start": 193.9,
+      "text": "The upload's complete from the client's perspective and we can show them maybe the single resolution photo just to them while the rest is processing in the background.",
+      "end": 202.7
+    },
+    {
+      "start": 202.7,
+      "text": "Because at the other end of the queue, you have a pool of workers, maybe a worker servers, right?",
+      "end": 208.9
+    },
+    {
+      "start": 208.9,
+      "text": "Where each worker is polling one of those messages at a time off of the queue and processing it.",
+      "end": 213.2
+    },
+    {
+      "start": 213.2,
+      "text": "So if 3 photos get uploaded around the same time, each one gets picked up maybe by a different worker on the other end of that queue called consumers, and they'll all be able to process in parallel.",
+      "end": 224.5
+    },
+    {
+      "start": 224.5,
+      "text": "So we can look at what happens in this case to our 3 problems.",
+      "end": 227.3
+    },
+    {
+      "start": 227.3,
+      "text": "Now uploads are fast because your server is just saving the file and dropping it onto a message queue.",
+      "end": 232
+    },
+    {
+      "start": 232,
+      "text": "It's not doing the expensive processing.",
+      "end": 234.1
+    },
+    {
+      "start": 234.1,
+      "text": "Failures are isolated because if a worker crashes while processing a single photo, that message just gets redelivered to another worker and it picks up where the other one left off.",
+      "end": 242.6
+    },
+    {
+      "start": 242.6,
+      "text": "And then on those big traffic spikes, it just means that the queue gets a little bit deeper, right?",
+      "end": 248.1
+    },
+    {
+      "start": 248.1,
+      "text": "There's more items in the queue.",
+      "end": 249.3
+    },
+    {
+      "start": 249.3,
+      "text": "And so the messages sit there potentially waiting to be processed.",
+      "end": 252.8
+    },
+    {
+      "start": 252.8,
+      "text": "So at worst, there's a delay, but none are dropped or aired out.",
+      "end": 256.1
+    },
+    {
+      "start": 256.1,
+      "text": "All right, now let's formalize what we just saw.",
+      "end": 258.7
+    },
+    {
+      "start": 258.7,
+      "text": "What actually is a message queue?",
+      "end": 260.6
+    },
+    {
+      "start": 260.6,
+      "text": "Well, it's pretty much exactly what it sounds like.",
+      "end": 263.4
+    },
+    {
+      "start": 263.4,
+      "text": "A message queue is just a buffer or a queue that sits between a producer and a consumer.",
+      "end": 267.5
+    },
+    {
+      "start": 267.5,
+      "text": "The producer is the thing or the server, the service that creates the work.",
+      "end": 272
+    },
+    {
+      "start": 272,
+      "text": "In our example, this was that server handling the upload from the client.",
+      "end": 275.5
+    },
+    {
+      "start": 275.5,
+      "text": "And the consumer is the thing that actually does the work.",
+      "end": 278.5
+    },
+    {
+      "start": 278.5,
+      "text": "In our case, this was that pool of workers that process the photos.",
+      "end": 282.1
+    },
+    {
+      "start": 282.1,
+      "text": "The way it works is really straightforward.",
+      "end": 284.6
+    },
+    {
+      "start": 284.6,
+      "text": "The producer sends a message to the queue and then totally forgets about it.",
+      "end": 288
+    },
+    {
+      "start": 288,
+      "text": "It doesn't care when or even if the message gets processed at all.",
+      "end": 291.6
+    },
+    {
+      "start": 291.6,
+      "text": "That's not its responsibility.",
+      "end": 293.3
+    },
+    {
+      "start": 293.3,
+      "text": "It just fires and moves on.",
+      "end": 295.4
+    },
+    {
+      "start": 295.4,
+      "text": "On the other end, the consumer pulls messages off the queue and processes them at its own pace.",
+      "end": 299.9
+    },
+    {
+      "start": 299.9,
+      "text": "So the queue's whole job is just to hold on to these messages until somebody is ready to deal with them.",
+      "end": 304.2
+    },
+    {
+      "start": 304.2,
+      "text": "It's just a buffer in between the two services.",
+      "end": 306.9
+    },
+    {
+      "start": 306.9,
+      "text": "The key property here is called decoupling.",
+      "end": 309.5
+    },
+    {
+      "start": 309.5,
+      "text": "The producer and the consumer don't know about each other. They don't need to.",
+      "end": 312.6
+    },
+    {
+      "start": 312.6,
+      "text": "And so this allows you to scale them independently and swap one or the other without affecting each other directly.",
+      "end": 318.3
+    },
+    {
+      "start": 318.3,
+      "text": "You need more consumers, fine.",
+      "end": 319.5
+    },
+    {
+      "start": 319.5,
+      "text": "You can add more servers there while leaving the producers where they were.",
+      "end": 323.1
+    },
+    {
+      "start": 323.1,
+      "text": "You need more producers, you can scale those up while leaving, you know, the one or two consumers that you had.",
+      "end": 328.7
+    },
+    {
+      "start": 328.7,
+      "text": "um, to wrap up this this kind of intro on what is a message queue, uh, in albeit kind of silly analogy that I remember from school, which may help you and I've seen this click for candidates, is to think of it like a kitchen.",
+      "end": 341.8
+    },
+    {
+      "start": 341.8,
+      "text": "The waiter takes your order and then puts it on the ticket rail.",
+      "end": 345.2
+    },
+    {
+      "start": 345.2,
+      "text": "The cook grabs the ticket off of the rail when they're ready.",
+      "end": 347.6
+    },
+    {
+      "start": 347.6,
+      "text": "And the waiter doesn't just stand there waiting the waiting for the cook to make your food.",
+      "end": 351.2
+    },
+    {
+      "start": 351.2,
+      "text": "Instead, they go and they serve other tables, right?",
+      "end": 353.9
+    },
+    {
+      "start": 353.9,
+      "text": "And so the ticket rail decouples the front of the house from the back of the house exactly the same way a message queue does for our producers and our consumers, right?",
+      "end": 361
+    },
+    {
+      "start": 361,
+      "text": "Pretty straightforward example.",
+      "end": 363.6
+    },
+    {
+      "start": 363.6,
+      "text": "Okay, now that we know what a message queue is, let's talk a little bit about how it actually works under the hood.",
+      "end": 367
+    },
+    {
+      "start": 367,
+      "text": "There's a few mechanisms that you need to understand and each one solves real problems.",
+      "end": 374
+    },
+    {
+      "start": 374,
+      "text": "So, let's start off with with acknowledgments.",
+      "end": 376.8
+    },
+    {
+      "start": 376.8,
+      "text": "Let me give you a scenario.",
+      "end": 377.8
+    },
+    {
+      "start": 377.8,
+      "text": "A worker pulls a message off of the queue and it starts processing the photo.",
+      "end": 381.4
+    },
+    {
+      "start": 381.4,
+      "text": "Halfway through the worker crashes for whatever reason, it runs out of memory, anything can happen here.",
+      "end": 387.2
+    },
+    {
+      "start": 387.2,
+      "text": "And so what would happen to that message?",
+      "end": 388.6
+    },
+    {
+      "start": 388.6,
+      "text": "Well, if the queue just deleted the message the moment the worker grabbed it, then that photo is now gone and it will never get processed.",
+      "end": 394.9
+    },
+    {
+      "start": 394.9,
+      "text": "That user, that user's upload is basically just lost forever, uh, which would clearly be be really bad.",
+      "end": 400.9
+    },
+    {
+      "start": 400.9,
+      "text": "This is what acknowledgment solve.",
+      "end": 403.3
+    },
+    {
+      "start": 403.3,
+      "text": "When a consumer pulls the message off of the queue, the queue doesn't delete it right away.",
+      "end": 407.6
+    },
+    {
+      "start": 407.6,
+      "text": "Instead, the consumer has to explicitly send an acknowledgment or an ACK back to the queue saying, hey, I'm done with this one.",
+      "end": 413.6
+    },
+    {
+      "start": 413.6,
+      "text": "You can go ahead and actually delete it now.",
+      "end": 416.5
+    },
+    {
+      "start": 416.5,
+      "text": "So if the consumer crashes before sending that ACK, the queue assumes it wasn't processed and it ends up just being redelivered.",
+      "end": 423.5
+    },
+    {
+      "start": 423.5,
+      "text": "That message ends up being redelivered to another consumer so that nothing was actually lost.",
+      "end": 427.3
+    },
+    {
+      "start": 427.3,
+      "text": "Great. So the the queue holds on to messages until consumers ACK them, right?",
+      "end": 432.1
+    },
+    {
+      "start": 432.1,
+      "text": "Acknowledge them. um, but think about what this actually means.",
+      "end": 435.1
+    },
+    {
+      "start": 435.1,
+      "text": "And you may have already thought this or recognized this.",
+      "end": 438.5
+    },
+    {
+      "start": 438.5,
+      "text": "While worker A is busy processing a message and it hasn't acted yet because it's in its 4 seconds of doing all that processing, then that message is technically still in the queue.",
+      "end": 448.4
+    },
+    {
+      "start": 448.4,
+      "text": "So what's stopping worker B from grabbing it too?",
+      "end": 451.8
+    },
+    {
+      "start": 451.8,
+      "text": "And then you'd have two workers doing the exact same work, which is wasteful at best and in some cases maybe even even dangerous or hurts the state of your system.",
+      "end": 461.3
+    },
+    {
+      "start": 461.3,
+      "text": "Now different queuing systems solve this exact problem different ways.",
+      "end": 464.1
+    },
+    {
+      "start": 464.1,
+      "text": "In SQS, which is Amazon's native message queue, when a consumer picks up a message, it becomes invisible.",
+      "end": 470.4
+    },
+    {
+      "start": 470.4,
+      "text": "to all other consumers for a configurable window, like say 30 seconds.",
+      "end": 474.8
+    },
+    {
+      "start": 474.8,
+      "text": "And so if the consumer finishes and it acts within that window, then all good, the message was removed.",
+      "end": 480.5
+    },
+    {
+      "start": 480.5,
+      "text": "If it doesn't, the message becomes visible again automatically.",
+      "end": 483.7
+    },
+    {
+      "start": 483.7,
+      "text": "And another consumer can retry.",
+      "end": 485.7
+    },
+    {
+      "start": 485.7,
+      "text": "So it's basically like a 30 second window or a configurable time period, um where we we don't let consumers, um double process a message.",
+      "end": 494
+    },
+    {
+      "start": 494,
+      "text": "Kafka on the other hand, they take a pretty different approach though.",
+      "end": 497.7
+    },
+    {
+      "start": 497.7,
+      "text": "They just assign each partition, we'll talk about what those are in a second, to exactly one consumer in a group.",
+      "end": 502.8
+    },
+    {
+      "start": 502.8,
+      "text": "So there's no even competition in the first place.",
+      "end": 504.6
+    },
+    {
+      "start": 504.6,
+      "text": "There's only one consumer ever reading from any given.",
+      "end": 508.1
+    },
+    {
+      "start": 508.1,
+      "text": "logical queue if you will.",
+      "end": 510.1
+    },
+    {
+      "start": 510.1,
+      "text": "And then RabbitMQ, another popular message queue that we'll talk about at the end, they use channel level prefetch limits and ACK timeouts to manage this.",
+      "end": 517.8
+    },
+    {
+      "start": 517.8,
+      "text": "So we won't get into all those details.",
+      "end": 519
+    },
+    {
+      "start": 519,
+      "text": "But what's good for you to know is just that.",
+      "end": 521.6
+    },
+    {
+      "start": 521.6,
+      "text": "All of these queues have a way to prevent duplicate processing, and whenever your queue of choice is, it might be worth looking up how exactly they do that.",
+      "end": 530.1
+    },
+    {
+      "start": 530.1,
+      "text": "So while the implementations differ, the concept is always the same.",
+      "end": 533.9
+    },
+    {
+      "start": 533.9,
+      "text": "Every queuing system just needs a way to make sure that a message is only being actively processed by one consumer at a time.",
+      "end": 540.6
+    },
+    {
+      "start": 540.6,
+      "text": "Okay, but even with ACTS and that duplicate uh message prevention, there's still a tricky edge case that I want to make you guys aware of.",
+      "end": 547.6
+    },
+    {
+      "start": 547.6,
+      "text": "So what if the worker processes the message successfully, but then crashes right before that moment it sends the acknowledgement, it sends the ACT.",
+      "end": 556.8
+    },
+    {
+      "start": 556.8,
+      "text": "Now the queue thinks that it was never processed, so it re-delivers it to another consumer, and that same photo gets processed twice.",
+      "end": 563.7
+    },
+    {
+      "start": 563.7,
+      "text": "And maybe in our case, when you're just resizing photos and running content moderation, that doesn't matter at all.",
+      "end": 570.4
+    },
+    {
+      "start": 570.4,
+      "text": "Doing that twice has has no bad effect.",
+      "end": 572
+    },
+    {
+      "start": 572,
+      "text": "But what if the message was something like, charge Evan $50.",
+      "end": 575.4
+    },
+    {
+      "start": 575.4,
+      "text": "for a banking application or something.",
+      "end": 577.3
+    },
+    {
+      "start": 577.3,
+      "text": "um, that duplicate message now just resulted in me being charged $100 and and that's obviously not cool.",
+      "end": 583.2
+    },
+    {
+      "start": 583.2,
+      "text": "um, this is the problem that's referred to as we talk about message queues as delivery guarantees.",
+      "end": 588.9
+    },
+    {
+      "start": 588.9,
+      "text": "And there are 3 that you should know about and that your interviewer might ask about.",
+      "end": 594
+    },
+    {
+      "start": 594,
+      "text": "The first and by far the most common delivery guarantee is called at least once delivery.",
+      "end": 600.2
+    },
+    {
+      "start": 600.2,
+      "text": "This just means that the queue guarantees that every single message will be delivered at least one time, but it might be delivered more than once.",
+      "end": 610.5
+    },
+    {
+      "start": 610.5,
+      "text": "The implication of this is that your consumers now need to be what's called idempotent.",
+      "end": 616.8
+    },
+    {
+      "start": 616.8,
+      "text": "Idempotent just means that processing the same message twice will produce the exact same result.",
+      "end": 622.4
+    },
+    {
+      "start": 622.4,
+      "text": "Let me give you an example.",
+      "end": 624
+    },
+    {
+      "start": 624,
+      "text": "If your message says, set user 123's profile photo to photo 5, then running that twice is fine.",
+      "end": 630.8
+    },
+    {
+      "start": 630.8,
+      "text": "You get the exact same result.",
+      "end": 631.8
+    },
+    {
+      "start": 631.8,
+      "text": "The first time you ran it, it set it to photo 5.",
+      "end": 634.9
+    },
+    {
+      "start": 634.9,
+      "text": "The second time you run it, it just set it to photo 5 again, which it already was, so no big deal.",
+      "end": 639
+    },
+    {
+      "start": 639,
+      "text": "But, like we saw with that earlier message, or with the banking example, if your message is something like increment user 123's post count by 1, then running that twice is a problem.",
+      "end": 648.3
+    },
+    {
+      "start": 648.3,
+      "text": "You've now obviously incremented their post count by 2.",
+      "end": 651.7
+    },
+    {
+      "start": 651.7,
+      "text": "And so in practice, you design your operations to be naturally idempotent, like in a photo example, or you check whether the action has already been completed before doing it again.",
+      "end": 662.7
+    },
+    {
+      "start": 662.7,
+      "text": "And so if we if we take that example of increment user 123's post count by 1.",
+      "end": 666.4
+    },
+    {
+      "start": 666.4,
+      "text": "The message or the work would actually be, uh, update user 123's post count to 54, where 54 was what it was before plus 1.",
+      "end": 675.5
+    },
+    {
+      "start": 675.5,
+      "text": "And that way running it twice, the outcome is always still 54.",
+      "end": 680.7
+    },
+    {
+      "start": 680.7,
+      "text": "um, now this at least once delivery with idempotent consumers, this is almost always the right answer, both in production and in your interview.",
+      "end": 688
+    },
+    {
+      "start": 688,
+      "text": "So if your interviewer asks what you're going to use, it's almost always the right answer to say I'm going to have at least once uh delivery guarantees and I'm going to make sure that my consumers are idempotent.",
+      "end": 698.3
+    },
+    {
+      "start": 698.3,
+      "text": "The second delivery guarantee is what's called at most once.",
+      "end": 700.8
+    },
+    {
+      "start": 700.8,
+      "text": "And this is basically just fire and forget.",
+      "end": 703.5
+    },
+    {
+      "start": 703.5,
+      "text": "So a consumer takes a message off of the queue, we immediately delete it off the queue at that moment.",
+      "end": 709.5
+    },
+    {
+      "start": 709.5,
+      "text": "If something goes wrong, you know, at most one guy processed it.",
+      "end": 711.8
+    },
+    {
+      "start": 711.8,
+      "text": "uh, at worst, nobody processed it.",
+      "end": 713.9
+    },
+    {
+      "start": 713.9,
+      "text": "And so you really only want to use this for things like analytics events or metrics where losing a few data points is totally acceptable.",
+      "end": 720.2
+    },
+    {
+      "start": 720.2,
+      "text": "You have to be able to accept the loss if you use that most once.",
+      "end": 723.9
+    },
+    {
+      "start": 723.9,
+      "text": "And then the third one is the holy grail.",
+      "end": 726.3
+    },
+    {
+      "start": 726.3,
+      "text": "It's exactly once. uh, this is that every message is processed exactly one time, as it says, right?",
+      "end": 733.2
+    },
+    {
+      "start": 733.2,
+      "text": "uh, the reality is that true exactly once delivery is extremely hard to achieve in distributed systems.",
+      "end": 739.4
+    },
+    {
+      "start": 739.4,
+      "text": "Kafka supports a form of it for specific patterns within its own ecosystem, but it comes with real trade-offs and limitations.",
+      "end": 747.3
+    },
+    {
+      "start": 747.3,
+      "text": "And so, my honest advice to you.",
+      "end": 749.9
+    },
+    {
+      "start": 749.9,
+      "text": "is don't promise exactly once in your interview unless you can explain the mechanism and defend it.",
+      "end": 754.3
+    },
+    {
+      "start": 754.3,
+      "text": "At least once with those itempotting consumers is the safer and frankly the more practical answer and what is almost always used in production.",
+      "end": 761.5
+    },
+    {
+      "start": 761.5,
+      "text": "Now that we understand a little bit about how queues work and what goes on under the hood, the next question is when should you actually reach for one?",
+      "end": 767.9
+    },
+    {
+      "start": 767.9,
+      "text": "Well, there's 4 signals that you should end up looking for that may lead you to introduce a queue in your interview.",
+      "end": 773.6
+    },
+    {
+      "start": 773.6,
+      "text": "And these are very similar to the motivating example that we started with.",
+      "end": 777.3
+    },
+    {
+      "start": 777.3,
+      "text": "The first one is that async work.",
+      "end": 778.7
+    },
+    {
+      "start": 778.7,
+      "text": "And so this is when a user doesn't need an immediate result, like sending an email, generating a report, processing uploads, all those things that we talked about.",
+      "end": 786.7
+    },
+    {
+      "start": 786.7,
+      "text": "um, the litmus test is really simple.",
+      "end": 788.6
+    },
+    {
+      "start": 788.6,
+      "text": "Ask yourself, does the user need the result of this operation right now, or can they wait a little bit?",
+      "end": 794.6
+    },
+    {
+      "start": 794.6,
+      "text": "If the answer is no, then it's a great candidate to put it in a queue and have a worker process it asynchronously.",
+      "end": 800.2
+    },
+    {
+      "start": 800.2,
+      "text": "The second is the bursty traffic, like we saw in our example.",
+      "end": 803.9
+    },
+    {
+      "start": 803.9,
+      "text": "You need to absorb spikes in traffic without dropping any requests.",
+      "end": 807.1
+    },
+    {
+      "start": 807.1,
+      "text": "And so the queue is there to kind of smooth out the load by acting as a buffer and just accumulating a backlog of work that the consumers can get to, you know, when they have time or they have resources.",
+      "end": 819
+    },
+    {
+      "start": 819,
+      "text": "Third is decoupling. This is your producer and consumer might have completely different scaling or hardware needs.",
+      "end": 824.3
+    },
+    {
+      "start": 824.3,
+      "text": "Going back to our image processing example, the upload services are super lightweight.",
+      "end": 829.3
+    },
+    {
+      "start": 829.3,
+      "text": "They just accept the file, drop it into a message queue, but the workers doing the actual processing might need GPUs or beefy machines with lots of memory.",
+      "end": 838
+    },
+    {
+      "start": 838,
+      "text": "And so with a queue between them, you can scale and provision each side independently.",
+      "end": 842.4
+    },
+    {
+      "start": 842.4,
+      "text": "You're not forced to run expensive GPU instances just to handle uploads.",
+      "end": 846.8
+    },
+    {
+      "start": 846.8,
+      "text": "This can make it more cost efficient.",
+      "end": 848.8
+    },
+    {
+      "start": 848.8,
+      "text": "And then the fourth one is reliability.",
+      "end": 851.5
+    },
+    {
+      "start": 851.5,
+      "text": "When you just can't afford to lose work.",
+      "end": 853.1
+    },
+    {
+      "start": 853.1,
+      "text": "So if a downstream service is temporarily unavailable, the queue holds on to that message until it comes back online.",
+      "end": 860.9
+    },
+    {
+      "start": 860.9,
+      "text": "And you make sure that you never lost anything.",
+      "end": 862.8
+    },
+    {
+      "start": 862.8,
+      "text": "One thing that I do want to call out just really quickly, because I see it in quite a few interviews, especially with junior and mid-level candidates, and it's be careful introducing a queue into a synchronous workload.",
+      "end": 872.7
+    },
+    {
+      "start": 872.7,
+      "text": "It just doesn't belong there.",
+      "end": 874.2
+    },
+    {
+      "start": 874.2,
+      "text": "So if you have strong latency requirements in your non-functional requirements, like sub 500 millisecond response times to get an answer, by adding a queue, you've nearly guaranteed that you're going to break that constraint.",
+      "end": 884.5
+    },
+    {
+      "start": 884.5,
+      "text": "Not only do you have a bunch of complexity on figuring out how to get that message back to the client in the first place, but.",
+      "end": 890.9
+    },
+    {
+      "start": 890.9,
+      "text": "You've broken that latency constraint almost entirely by the nature of the way that these systems work.",
+      "end": 896.7
+    },
+    {
+      "start": 896.7,
+      "text": "So, again, Qs are for that work that you can afford to do later, even if later is a few seconds from now.",
+      "end": 902.4
+    },
+    {
+      "start": 902.4,
+      "text": "Okay, now let's get into some of those deep dives.",
+      "end": 904.9
+    },
+    {
+      "start": 904.9,
+      "text": "This is everybody's favorite part, right?",
+      "end": 906
+    },
+    {
+      "start": 906,
+      "text": "The things that the interviewers really love to dig into once you introduce a queue into your system.",
+      "end": 910.2
+    },
+    {
+      "start": 910.2,
+      "text": "So it's really important that you're prepared for these questions, right?",
+      "end": 913.3
+    },
+    {
+      "start": 913.3,
+      "text": "You just drew a message queue on the whiteboard.",
+      "end": 915.2
+    },
+    {
+      "start": 915.2,
+      "text": "Here's what the interviewer might come at you with, okay?",
+      "end": 917.5
+    },
+    {
+      "start": 917.5,
+      "text": "So the first one's about scaling.",
+      "end": 919.6
+    },
+    {
+      "start": 919.6,
+      "text": "They might say, how does your queue handle the increased throughput or handle increasing throughput?",
+      "end": 925.8
+    },
+    {
+      "start": 925.8,
+      "text": "And what you need to recognize here is that a single queue can only handle so much.",
+      "end": 929.8
+    },
+    {
+      "start": 929.8,
+      "text": "When you need more, you do what's called partition.",
+      "end": 933.1
+    },
+    {
+      "start": 933.1,
+      "text": "And partitioning just means splitting the queue into multiple independent sequences or like kind of sub queues of messages.",
+      "end": 940.8
+    },
+    {
+      "start": 940.8,
+      "text": "Different workers can then process different partitions in parallel so that your throughput scales horizontally with the number of partitions.",
+      "end": 949.7
+    },
+    {
+      "start": 949.7,
+      "text": "So by splitting into multiple.",
+      "end": 951.1
+    },
+    {
+      "start": 951.1,
+      "text": "Queues, I'm putting that in quotes just because we're kind of conflating terminology here.",
+      "end": 955.4
+    },
+    {
+      "start": 955.4,
+      "text": "But multiple partitions, thus multiple logical queues.",
+      "end": 958.7
+    },
+    {
+      "start": 958.7,
+      "text": "You can have multiple consumers consuming from the same time and thus increase throughput.",
+      "end": 963.2
+    },
+    {
+      "start": 963.2,
+      "text": "um, on the consumer side, you have what are called consumer groups.",
+      "end": 967.3
+    },
+    {
+      "start": 967.3,
+      "text": "And a consumer group is just a pool of workers that divide those partitions amongst themselves.",
+      "end": 973.5
+    },
+    {
+      "start": 973.5,
+      "text": "So if you have 6 partitions and 3 consumers in a group, then each consumer can handle 2 partitions.",
+      "end": 978.6
+    },
+    {
+      "start": 978.6,
+      "text": "You need to go faster? Well then you can add more consumers. Now the.",
+      "end": 982.7
+    },
+    {
+      "start": 982.7,
+      "text": "um importantly there is a ceiling here.",
+      "end": 984.5
+    },
+    {
+      "start": 984.5,
+      "text": "You can't have more consumers than you have partitions.",
+      "end": 988.6
+    },
+    {
+      "start": 988.6,
+      "text": "If you have 6 partitions and 6 consumers, adding a 7th doesn't help you here because there's no partition left for that new consumer to consume from.",
+      "end": 997.8
+    },
+    {
+      "start": 997.8,
+      "text": "And hopefully that makes sense.",
+      "end": 999.2
+    },
+    {
+      "start": 999.2,
+      "text": "Now really importantly, the partition key, which is how you decide which message goes into which of these partitions, is really really important.",
+      "end": 1007
+    },
+    {
+      "start": 1007,
+      "text": "It's analogous to choosing a shard key or partition key in a database, and it matters for 2 main reasons. The first is ordering.",
+      "end": 1014.7
+    },
+    {
+      "start": 1014.7,
+      "text": "Messages with the same partition key always go to the same partition.",
+      "end": 1019.3
+    },
+    {
+      "start": 1019.3,
+      "text": "And within a partition, ordering is guaranteed because they're sitting in that same sub queue.",
+      "end": 1024.9
+    },
+    {
+      "start": 1024.9,
+      "text": "So imagine again that you're you're processing that bank transaction example we brought up.",
+      "end": 1030.8
+    },
+    {
+      "start": 1030.8,
+      "text": "A user maybe deposits $100 and then withdraws $50.",
+      "end": 1033.4
+    },
+    {
+      "start": 1033.4,
+      "text": "Clearly they should be able to do this.",
+      "end": 1035.2
+    },
+    {
+      "start": 1035.2,
+      "text": "They put $100 into the bank, now they want to take 50 out.",
+      "end": 1038.3
+    },
+    {
+      "start": 1038.3,
+      "text": "If those two messages though ended up on different partitions, then the withdrawal could get processed first, and now it's rejected because at that moment maybe the account is empty, right?",
+      "end": 1050.6
+    },
+    {
+      "start": 1050.6,
+      "text": "And so by using account ID as the partition key, now both that both of those messages will land on the same partition because they're pertain to the same account.",
+      "end": 1059.8
+    },
+    {
+      "start": 1059.8,
+      "text": "They'll be in the right order and they'll get processed in that right order where we add the 100 before we take away the 50, right?",
+      "end": 1066.4
+    },
+    {
+      "start": 1066.4,
+      "text": "And then the second one that's important about choosing your partition key is the even distribution.",
+      "end": 1071.8
+    },
+    {
+      "start": 1071.8,
+      "text": "You want your partition keys to spread work across these partitions pretty evenly.",
+      "end": 1076.7
+    },
+    {
+      "start": 1076.7,
+      "text": "You can imagine that if you're building like a a ride sharing application and you're partitioned by city, then now New York City is going to be, excuse me, New York City is going to be absolutely slammed while Boise sits there maybe getting nothing, right?",
+      "end": 1090.4
+    },
+    {
+      "start": 1090.4,
+      "text": "And so, that's what we call, of course, a hot partition.",
+      "end": 1094.4
+    },
+    {
+      "start": 1094.4,
+      "text": "And you'd probably want to partition by something more evenly distributed like a ride ID so that you don't have that hot partition where you have one consumer doing all the work where another consumer is just sitting there waiting because it's just watching Boise and there's not nearly as many Uber Eats.",
+      "end": 1108.4
+    },
+    {
+      "start": 1108.4,
+      "text": "um, there's of course a real trade-off here though, and it's one that you might discuss in your interview.",
+      "end": 1113.1
+    },
+    {
+      "start": 1113.1,
+      "text": "And it's that the key that gives you ordering might not always be the key that gives you the best distribution.",
+      "end": 1119.3
+    },
+    {
+      "start": 1119.3,
+      "text": "And so choosing the right partition key here is one of those decisions that's worth really spending some time in your interview thinking through the consequences on those two factors ordering and distribution.",
+      "end": 1130.3
+    },
+    {
+      "start": 1130.3,
+      "text": "The the next deep dive that interviewers love to ask is, what happens if your producers outpace your consumers?",
+      "end": 1136.6
+    },
+    {
+      "start": 1136.6,
+      "text": "So if your producers are creating messages faster than your consumers can process them, the crew the the the queue just grows and grows and grows and grows and grows, right?",
+      "end": 1144.9
+    },
+    {
+      "start": 1144.9,
+      "text": "And the queue doesn't solve a capacity problem, it just delays it.",
+      "end": 1149.3
+    },
+    {
+      "start": 1149.3,
+      "text": "It's just buying you time.",
+      "end": 1150.9
+    },
+    {
+      "start": 1150.9,
+      "text": "If you receive 300 messages per second, but your consumers can only handle 200, that queue is growing at 100 messages every single second.",
+      "end": 1159.3
+    },
+    {
+      "start": 1159.3,
+      "text": "And you'll never be able to catch up.",
+      "end": 1161
+    },
+    {
+      "start": 1161,
+      "text": "Eventually you'll run out of memory on that queue and things are going to go wrong.",
+      "end": 1164.5
+    },
+    {
+      "start": 1164.5,
+      "text": "So what what do you do or what can you do?",
+      "end": 1166.6
+    },
+    {
+      "start": 1166.6,
+      "text": "There's a couple things. The first of course is scaling.",
+      "end": 1170.1
+    },
+    {
+      "start": 1170.1,
+      "text": "You can you can add auto scaling and a lot of the uh cloud providers provide auto scaling where you monitor the queue depth and when it starts to grow too much you spin up more consumers.",
+      "end": 1179.2
+    },
+    {
+      "start": 1179.2,
+      "text": "So that you can consume quicker or you can even add additional partitions to the queue.",
+      "end": 1184.4
+    },
+    {
+      "start": 1184.4,
+      "text": "But the second one and the one that interviewers are oftentimes looking for is to apply what's called back pressure to the producers themselves.",
+      "end": 1191.8
+    },
+    {
+      "start": 1191.8,
+      "text": "And so slow the producers down, basically start either rejecting messages or maybe returning an error to the client.",
+      "end": 1198.2
+    },
+    {
+      "start": 1198.2,
+      "text": "Saying, hey, we're a little overloaded right now.",
+      "end": 1200.2
+    },
+    {
+      "start": 1200.2,
+      "text": "Please try again in a minute.",
+      "end": 1200.9
+    },
+    {
+      "start": 1200.9,
+      "text": "And then the third and maybe the bare minimum is that you should just be setting alerts of course on your queue depth so that you know when something like this is happening.",
+      "end": 1209.9
+    },
+    {
+      "start": 1209.9,
+      "text": "It's good to have the monitoring and the alerting here. um.",
+      "end": 1212.9
+    },
+    {
+      "start": 1212.9,
+      "text": "Be ready, be ready to discuss this one.",
+      "end": 1215.3
+    },
+    {
+      "start": 1215.3,
+      "text": "And everyone wants to know that you understand that a queue isn't just magic, right?",
+      "end": 1219.7
+    },
+    {
+      "start": 1219.7,
+      "text": "It's a buffer, not a solution to insufficient capacity.",
+      "end": 1223.4
+    },
+    {
+      "start": 1223.4,
+      "text": "Moving on, uh sometimes a message just fails to process.",
+      "end": 1226.4
+    },
+    {
+      "start": 1226.4,
+      "text": "And so your interviewer might ask you, what happens when a message fails to process?",
+      "end": 1230.6
+    },
+    {
+      "start": 1230.6,
+      "text": "Maybe the image file was corrupted or the downstream service is temporarily unavailable.",
+      "end": 1235.9
+    },
+    {
+      "start": 1235.9,
+      "text": "That's fine, it happens, right?",
+      "end": 1237.5
+    },
+    {
+      "start": 1237.5,
+      "text": "So think about our photo upload example.",
+      "end": 1239
+    },
+    {
+      "start": 1239,
+      "text": "What if I just uploaded a corrupted photo?",
+      "end": 1241.9
+    },
+    {
+      "start": 1241.9,
+      "text": "It will never succeed. No matter how many times you try, it will continue to fail.",
+      "end": 1246.1
+    },
+    {
+      "start": 1246.1,
+      "text": "And this is a really common problem and it's what's called with Message Queues a poisoned message.",
+      "end": 1250.7
+    },
+    {
+      "start": 1250.7,
+      "text": "Sounds maybe scarier than it is, but it's just a malformed or problematic message that crashes the consumer every single time and there's no recovering from it.",
+      "end": 1259.6
+    },
+    {
+      "start": 1259.6,
+      "text": "So without guardrails, it's going to retry forever.",
+      "end": 1262.5
+    },
+    {
+      "start": 1262.5,
+      "text": "And meanwhile, everyone else is just stuck behind it waiting.",
+      "end": 1266.6
+    },
+    {
+      "start": 1266.6,
+      "text": "It's just consuming all the resources of the given consumer indefinitely.",
+      "end": 1271.6
+    },
+    {
+      "start": 1271.6,
+      "text": "To solve this, most queuing systems they let you configure a max retry count.",
+      "end": 1276.7
+    },
+    {
+      "start": 1276.7,
+      "text": "The message gets tried, tried, tried again, maybe 5, 6 times.",
+      "end": 1279.8
+    },
+    {
+      "start": 1279.8,
+      "text": "And if it still hasn't succeeded after 5 tries, instead of retrying forever, you shunted it.",
+      "end": 1285.5
+    },
+    {
+      "start": 1285.5,
+      "text": "And you put it to a dead letter queue or a DLQ.",
+      "end": 1287.6
+    },
+    {
+      "start": 1287.6,
+      "text": "And a DLQ is just a separate queue or sometimes even just a separate partition where failed messages go so that somebody can inspect them later and figure out what went wrong.",
+      "end": 1297.8
+    },
+    {
+      "start": 1297.8,
+      "text": "Meanwhile, the main queue keeps moving.",
+      "end": 1299.7
+    },
+    {
+      "start": 1299.7,
+      "text": "So, if this is failing, don't put it back into the main queue.",
+      "end": 1302.8
+    },
+    {
+      "start": 1302.8,
+      "text": "Put it somewhere else where we can just wait and maybe an admin comes in later to see what's going on there and try to fix those, right?",
+      "end": 1308.4
+    },
+    {
+      "start": 1308.4,
+      "text": "Or nowadays an AI model. um, mentioning this proactively in your interview is great.",
+      "end": 1312.3
+    },
+    {
+      "start": 1312.3,
+      "text": "It shows that you have a bunch of seniority.",
+      "end": 1314.3
+    },
+    {
+      "start": 1314.3,
+      "text": "It shows that, hey, I'm going to have a limit on retries.",
+      "end": 1316.7
+    },
+    {
+      "start": 1316.7,
+      "text": "I'm going to add a dead letter queue here.",
+      "end": 1318.9
+    },
+    {
+      "start": 1318.9,
+      "text": "um, this shows that you can understand those those failure scenarios.",
+      "end": 1321.6
+    },
+    {
+      "start": 1321.6,
+      "text": "Now, speaking about failure scenarios, what about the ultimate failure scenario?",
+      "end": 1325
+    },
+    {
+      "start": 1325,
+      "text": "What happens if the queue goes down?",
+      "end": 1326.7
+    },
+    {
+      "start": 1326.7,
+      "text": "um and this is a question about durability and fault tolerance, especially if that was in your non-functional requirements, it's something that you're going to want to talk about.",
+      "end": 1335.4
+    },
+    {
+      "start": 1335.4,
+      "text": "And it's good to know that modern message queues, at least some of them like Kafka, they persist messages to disk.",
+      "end": 1339.9
+    },
+    {
+      "start": 1339.9,
+      "text": "And they can replicate them across multiple brokers.",
+      "end": 1343.1
+    },
+    {
+      "start": 1343.1,
+      "text": "So what it's called in a Kafka ecosystem, but these are just different servers.",
+      "end": 1346.6
+    },
+    {
+      "start": 1346.6,
+      "text": "So if one broker goes down, another replica has that data.",
+      "end": 1349.7
+    },
+    {
+      "start": 1349.7,
+      "text": "Just like with read replicas with databases, same concept.",
+      "end": 1352.8
+    },
+    {
+      "start": 1352.8,
+      "text": "So in this way, no messages are lost.",
+      "end": 1354.5
+    },
+    {
+      "start": 1354.5,
+      "text": "uh Kafka in particular is interesting here because it stores messages on disks with a configurable retention window.",
+      "end": 1361.2
+    },
+    {
+      "start": 1361.2,
+      "text": "So you could keep messages around for say a day, a week, even forever if you wanted to and you had the capacity.",
+      "end": 1367.6
+    },
+    {
+      "start": 1367.6,
+      "text": "And what this means is that you actually",
+      "end": 1369.4
+    },
+    {
+      "start": 1369.4,
+      "text": "can replay messages from the past too, which is a really powerful recovery scenario.",
+      "end": 1373.6
+    },
+    {
+      "start": 1373.6,
+      "text": "If you need to reprocess data after kind of something went down, you have a new new version of a consumer.",
+      "end": 1379.2
+    },
+    {
+      "start": 1379.2,
+      "text": "And so you can imagine that your consumers go down for a while, they're offline for an hour, your queue, your Kafka queue is just backing up, no big deal, because when your consumer comes back on.",
+      "end": 1388.4
+    },
+    {
+      "start": 1388.4,
+      "text": "It can start to just take all of those things again.",
+      "end": 1390.8
+    },
+    {
+      "start": 1390.8,
+      "text": "Even more so if that consumer was broken and it processed things incorrectly, well we can just put a new consumer in, tell that consumer, hey, reprocess back from an hour ago, even though the messages were consumed, um, and we can.",
+      "end": 1403.8
+    },
+    {
+      "start": 1403.8,
+      "text": "Kind of fix what we broke.",
+      "end": 1404.5
+    },
+    {
+      "start": 1404.5,
+      "text": "Speaking of Kafka, let's maybe quickly go through what are the most common message queue technologies.",
+      "end": 1411
+    },
+    {
+      "start": 1411,
+      "text": "You certainly don't need to know all of these for your interview.",
+      "end": 1414.2
+    },
+    {
+      "start": 1414.2,
+      "text": "um but you should have at least one that you're comfortable talking about.",
+      "end": 1418.2
+    },
+    {
+      "start": 1418.2,
+      "text": "If you don't have a default already, choose Hello Interview.",
+      "end": 1420.7
+    },
+    {
+      "start": 1420.7,
+      "text": "It's kind of like the interviewing industry standard. um.",
+      "end": 1424.3
+    },
+    {
+      "start": 1424.3,
+      "text": "But let me walk you through a couple of them.",
+      "end": 1426
+    },
+    {
+      "start": 1426,
+      "text": "Of course, starting with Kafka.",
+      "end": 1427.8
+    },
+    {
+      "start": 1427.8,
+      "text": "Kafka is probably the most widely used, and it's the one that I said I'd recommend.",
+      "end": 1432
+    },
+    {
+      "start": 1432,
+      "text": "um, it's a distributed streaming platform that can act as both a message queue and a stream processing system.",
+      "end": 1437.1
+    },
+    {
+      "start": 1437.1,
+      "text": "So it's built for really high throughput.",
+      "end": 1439.1
+    },
+    {
+      "start": 1439.1,
+      "text": "It's durable because of what we talked about.",
+      "end": 1441.6
+    },
+    {
+      "start": 1441.6,
+      "text": "It writes messages to disks, and then it scales via partitions.",
+      "end": 1444.6
+    },
+    {
+      "start": 1444.6,
+      "text": "And when we're talking about partitions, that's how Kafka works.",
+      "end": 1448.5
+    },
+    {
+      "start": 1448.5,
+      "text": "It also supports those consumer groups.",
+      "end": 1450
+    },
+    {
+      "start": 1450,
+      "text": "But one thing that makes Kafka a little different from a traditional queue is that messages aren't removed directly after.",
+      "end": 1456.3
+    },
+    {
+      "start": 1456.3,
+      "text": "They're consumed. So this was that example where you want to replay messages in case something, some code in the consumer changed, right?",
+      "end": 1462.7
+    },
+    {
+      "start": 1462.7,
+      "text": "In Kafka, they stick around for those retention periods.",
+      "end": 1466.4
+    },
+    {
+      "start": 1466.4,
+      "text": "So multiple consumer groups can read from the same data independently, and you can replay messages if you need to, like I said.",
+      "end": 1472.2
+    },
+    {
+      "start": 1472.2,
+      "text": "um. The second one I'm going to call out and we have this in our written breakdowns quite a few times is SQS.",
+      "end": 1479.4
+    },
+    {
+      "start": 1479.4,
+      "text": "This is Amazon Simple Queue Service.",
+      "end": 1481
+    },
+    {
+      "start": 1481,
+      "text": "It's the AWS hosted ecosystem version of a message queue.",
+      "end": 1484.6
+    },
+    {
+      "start": 1484.6,
+      "text": "um, it's simple, it's fully managed, there's no infrastructure you need to worry about.",
+      "end": 1489.6
+    },
+    {
+      "start": 1489.6,
+      "text": "It comes basically in two flavors, a standard queue which gives you the best effort ordering and really high throughput, or FIFO queues, which give you strict ordering but at a lower throughput.",
+      "end": 1499.4
+    },
+    {
+      "start": 1499.4,
+      "text": "So, SQS is a great choice when you want something really straightforward.",
+      "end": 1502.3
+    },
+    {
+      "start": 1502.3,
+      "text": "You don't need more advanced features and your interviewer is cool with you pulling uh hosted solutions from cloud providers.",
+      "end": 1509.7
+    },
+    {
+      "start": 1509.7,
+      "text": "The last one that that I'll mention is RabbitMQ.",
+      "end": 1512.4
+    },
+    {
+      "start": 1512.4,
+      "text": "And RabbitMQ is a more traditional message broker and it supports complex routing patterns through what it calls exchanges and bindings.",
+      "end": 1519
+    },
+    {
+      "start": 1519,
+      "text": "Obviously I'm not going to have time to get into that here, but it's all the same underlying concepts.",
+      "end": 1523.7
+    },
+    {
+      "start": 1523.7,
+      "text": "It's maybe less common in system design interviews if I'm going to be honest with you, I hear it less, but it might be worth knowing that it exists.",
+      "end": 1530.7
+    },
+    {
+      "start": 1530.7,
+      "text": "uh especially in cases where you need some sophisticated message routing logic.",
+      "end": 1534.3
+    },
+    {
+      "start": 1534.3,
+      "text": "So to wrap things up in this section, if you don't already have a go-to pick Kafka, it's the most versatile.",
+      "end": 1540.5
+    },
+    {
+      "start": 1540.5,
+      "text": "If you want just hyper simplicity and the AWS ecosystem's around, SQS is great.",
+      "end": 1544.5
+    },
+    {
+      "start": 1544.5,
+      "text": "It has that visibility timeout thing that we had mentioned earlier.",
+      "end": 1548.4
+    },
+    {
+      "start": 1548.4,
+      "text": "It has the option for ordering guarantees or looser guarantees but higher latency.",
+      "end": 1552.2
+    },
+    {
+      "start": 1552.2,
+      "text": "All right, there you have it folks.",
+      "end": 1554.4
+    },
+    {
+      "start": 1554.4,
+      "text": "um, hopefully you found this useful.",
+      "end": 1555.8
+    },
+    {
+      "start": 1555.8,
+      "text": "Just a really quick recap.",
+      "end": 1557.8
+    },
+    {
+      "start": 1557.8,
+      "text": "Message queues decouple your producers from your consumer.",
+      "end": 1561
+    },
+    {
+      "start": 1561,
+      "text": "They buffer bursty traffic so nothing gets dropped.",
+      "end": 1564.5
+    },
+    {
+      "start": 1564.5,
+      "text": "They distribute work across pools of workers.",
+      "end": 1567
+    },
+    {
+      "start": 1567,
+      "text": "um, you should know when to use them, know the pitfalls, be specific and detailed when you bring things up.",
+      "end": 1573.4
+    },
+    {
+      "start": 1573.4,
+      "text": "um Any questions, anything that you think I got wrong, go ahead and please drop those in the comments.",
+      "end": 1578.5
+    },
+    {
+      "start": 1578.5,
+      "text": "I respond to as many of those as I can.",
+      "end": 1579.9
+    },
+    {
+      "start": 1579.9,
+      "text": "uh You'll have the Excalidraw drawings that I used in this video down in the description as well.",
+      "end": 1583.9
+    },
+    {
+      "start": 1583.9,
+      "text": "So go ahead and check that out.",
+      "end": 1585.2
+    },
+    {
+      "start": 1585.2,
+      "text": "You'll also have my LinkedIn.",
+      "end": 1586.8
+    },
+    {
+      "start": 1586.8,
+      "text": "Connect with me, send me a message.",
+      "end": 1587.9
+    },
+    {
+      "start": 1587.9,
+      "text": "Again, I respond to as many of those as I can get to as well.",
+      "end": 1591
+    },
+    {
+      "start": 1591,
+      "text": "I love hearing from you all, especially if you have a success story to share from your interviews.",
+      "end": 1595.7
+    },
+    {
+      "start": 1595.7,
+      "text": "I'd love to celebrate with you.",
+      "end": 1597.2
+    },
+    {
+      "start": 1597.2,
+      "text": "Most importantly, good luck with the upcoming interviews.",
+      "end": 1599
+    },
+    {
+      "start": 1599,
+      "text": "You guys are going to do great.",
+      "end": 1600.1
+    },
+    {
+      "start": 1600.1,
+      "text": "You're going to nail it. You're putting in the work. And I'll see you soon.",
+      "end": 1604.09
+    }
+  ],
+  "keyterms": [
+    "Hello Interview"
+  ]
+}

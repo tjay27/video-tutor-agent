@@ -1,0 +1,17 @@
+# Secrets
+.env
+**/.env
+
+# Dependencies and build output
+node_modules/
+dist/
+
+# yt-dlp binary (download separately, see README)
+server/bin/
+# Per-video cache: audio, captions, raw STT output
+server/data/
+
+# Generated audio / OS files
+*.mp3
+*.m4a
+.DS_Store

@@ -1,0 +1,402 @@
+{
+  "videoId": "e2UOjvIq5No",
+  "title": "Agentic AI Explained with a Real-Life Example",
+  "channel": "Gate Smashers",
+  "durationSeconds": 530,
+  "language": "hi-IN",
+  "source": "sarvam-stt",
+  "segments": [
+    {
+      "start": 0,
+      "text": "Dear students welcome to Gate Smashers.",
+      "end": 2.2
+    },
+    {
+      "start": 2.2,
+      "text": "आज की इस video में पूरे internet का सबसे hot topic जो है वो है Agentic AI.",
+      "end": 8.1
+    },
+    {
+      "start": 8.1,
+      "text": "उसी के बारे में बात करने जा रहे हैं तो मैं with real life example आपको explain करूंगा और साथ ही साथ मैं आपको practically भी दिखाऊंगा कि कैसे traditional AI और कैसे agentic AI काम करता है तो सबसे पहले थोड़ा सा सुन लो जी।",
+      "end": 21.4
+    },
+    {
+      "start": 21.4,
+      "text": "What is agentic AI? Agentic AI system works towards a goal with a degree of autonomy.",
+      "end": 26.7
+    },
+    {
+      "start": 26.7,
+      "text": "मतलब कहने का कि यहाँ पे हम लोग जो हैं वो एक goal के ऊपर काम करते हैं कि जब तक मेरा goal achieve नहीं होता तब तक वो repetitively सारा का सारा चीजों को check करता है और autonomous मतलब बार-बार user से instruction नहीं लेता, बार-बार user से नहीं पूछता।",
+      "end": 45.4
+    },
+    {
+      "start": 45.4,
+      "text": "एक बार हमने instruction दे दी तो सारा का सारा काम आपको करके देगा और proper decision देके आपको answer देगा।",
+      "end": 51.5
+    },
+    {
+      "start": 51.5,
+      "text": "ये आपका एक personal assistant या secretary की तरह है कि आपने उसको बोल दिया कि ये काम करना है।",
+      "end": 59
+    },
+    {
+      "start": 59,
+      "text": "अब वो कहीं से भी वो काम करवाए जुगाड़ करके कहीं से भी करवाए लोगों से मिलके पैसे देके पैसे लेके whatever it is।",
+      "end": 66.8
+    },
+    {
+      "start": 66.8,
+      "text": "लेकिन वो आपको काम करके देगा।",
+      "end": 67.6
+    },
+    {
+      "start": 67.6,
+      "text": "That is what a agentic AI।",
+      "end": 70.2
+    },
+    {
+      "start": 70.2,
+      "text": "तो यहाँ पे अगर मैं traditional AI की बात करूँ जो हम daily basis पे use करते हैं GPTs वगैरह use करते हैं, वहाँ पे generally क्या concept होता है?",
+      "end": 79.1
+    },
+    {
+      "start": 79.1,
+      "text": "User है, user ने prompt दिया और मेरे को एक response मिल गया।",
+      "end": 84.1
+    },
+    {
+      "start": 84.1,
+      "text": "मतलब simple सा example अगर मैं दूँ कि plan a 3 day daily trip within this।",
+      "end": 86.7
+    },
+    {
+      "start": 86.7,
+      "text": "तो इसने क्या कर देना है? इसने बोल देना है कि भैया ये मेरा 3 दिन का itinerary है, ऐसे-ऐसे करके कर लो। मतलब इसने आपको...",
+      "end": 95
+    },
+    {
+      "start": 95,
+      "text": "Text में information दे देनी है कि ऐसे-ऐसे चीजें आपकी हो सकती हैं।",
+      "end": 98.8
+    },
+    {
+      "start": 98.8,
+      "text": "मतलब question पूछा answer दे दिया।",
+      "end": 101.5
+    },
+    {
+      "start": 101.5,
+      "text": "यहां पे कोई goal oriented काम नहीं कर रहे।",
+      "end": 103.8
+    },
+    {
+      "start": 103.8,
+      "text": "मतलब ये चीज आपकी जो है वो normal answer मतलब helpful तो है लेकिन जब हम बात करते हैं कि भैया मेरे को ना।",
+      "end": 111.7
+    },
+    {
+      "start": 111.7,
+      "text": "तीन दिन का trip बना के दे ₹20,000 के अंदर मेरे को air fare by train जाऊं या by bus जाऊं या मेरे को वहां पे five star hotel में रुकूं three star में रुकूं four star में रुकूं मेरे को सारी चीजों का answer निकाल के दे दे तो वो अपने आप आपको क्या करेगा।",
+      "end": 129.3
+    },
+    {
+      "start": 129.3,
+      "text": "पूरा का पूरा search करेगा travel मतलब कहने का आपने सिर्फ prompt डालना है वो behind the scene जाके आप ऐसे लगा लो।",
+      "end": 137.5
+    },
+    {
+      "start": 137.5,
+      "text": "कि आपने इसको prompt दे दिया उसने क्या करना है behind the scene जाके Goibibo पे भी MakeMyTrip पे भी जो भी Agoda वगैरह सब पे जाके अपने आप airfare निकाल के देगा और उसको भी compare करके आपके लिए लेके आएगा।",
+      "end": 153.5
+    },
+    {
+      "start": 153.5,
+      "text": "फिर उसके बाद वो hotels में जाएगा।",
+      "end": 156.1
+    },
+    {
+      "start": 156.1,
+      "text": "Hotels के अंदर सारी information निकाल के और आपके हिसाब से कि आपको कौन सा चाहिए, आपको breakfast चाहिए, नहीं चाहिए, आपको twin bed चाहिए, king bed चाहिए, based on that आपको सारी information निकाल के देगा और payment तक रुक जाएगा।",
+      "end": 169
+    },
+    {
+      "start": 169,
+      "text": "बस कहने का मतलब ये है कि उसके बाद आपको सिर्फ...",
+      "end": 173
+    },
+    {
+      "start": 173,
+      "text": "Payment का भी अगर आप उसको authorize दे देते हो कि भैया ये ले मेरी credit card की information save कर ले तो वो memory में information save रखेगा और आपकी payment करके आपको tickets वगैरह भेज के और आपका reminder भी set कर देगा कि भैया ये लो ये काम है और इसको आप याद रखना।",
+      "end": 190.6
+    },
+    {
+      "start": 190.6,
+      "text": "तो भैया इसको बोलते हैं पूरा का पूरा goal oriented।",
+      "end": 193.7
+    },
+    {
+      "start": 193.7,
+      "text": "तो सब कुछ search किया, compare किया, budget के हिसाब से check भी करेगा कि आपका budget कितना ऊपर जा रहा है तो वो दोबारा से response generate करेगा।",
+      "end": 204
+    },
+    {
+      "start": 204,
+      "text": "मतलब जो response आ रहा है उसके basis पे feedback भी ले रहा है और उसके हिसाब से दोबारा generate करेगा answers और फिर finally build करके itinerary आपका plan पूरा का पूरा वहां पे बना के देगा।",
+      "end": 217.4
+    },
+    {
+      "start": 217.4,
+      "text": "ये है हमारा agentic AI। मतलब जैसे मैंने पहले ही बताया personal assistant और आप कह लो secretary की तरह।",
+      "end": 222.7
+    },
+    {
+      "start": 222.7,
+      "text": "तो यहां पे अगर components की बात की जाए तो mainly आपका LLM तो है ही।",
+      "end": 227.2
+    },
+    {
+      "start": 227.2,
+      "text": "इसके बिना तो कहानी चलेगी नहीं क्योंकि LLM ही तो है ultimately जो सारा का सारा generate करके देगा।",
+      "end": 231.8
+    },
+    {
+      "start": 231.8,
+      "text": "User तो LLM से ही बात करेगा।",
+      "end": 234.4
+    },
+    {
+      "start": 234.4,
+      "text": "जैसे Chat GPT। अब Chat तो क्या है?",
+      "end": 237
+    },
+    {
+      "start": 237,
+      "text": "एक user interface है जहां पे हम query लिख रहे हैं, answer दे रहा है, prompt लिख रहे हैं, answer दे रहा है।",
+      "end": 241.8
+    },
+    {
+      "start": 241.8,
+      "text": "लेकिन GPT क्या है? वो GPT तो है क्या?",
+      "end": 244.8
+    },
+    {
+      "start": 244.8,
+      "text": "ये LLM है चाहे Lama की बात कर लो, चाहे Claude की बात कर लो, चाहे OpenAI की बात कर लो, अलग-अलग LLMs available हैं जो कि reasoning वाला काम करते हैं।",
+      "end": 252.8
+    },
+    {
+      "start": 252.8,
+      "text": "फिर जो आप planning कर रहे हो उसको breakdown करेगा into the divide and conquer वाली technique है और उसके basis पे सबको काम पे लगा देगा internally कि तू hotel के बारे में search कर, तू इसके बारे में search कर, तू इसके बारे में search कर और there are various tools,",
+      "end": 268.2
+    },
+    {
+      "start": 268.2,
+      "text": "ऐसा नहीं कि सिर्फ LLM से ही बात कर रहे हैं हम।",
+      "end": 269.9
+    },
+    {
+      "start": 269.9,
+      "text": "Behind the scene बहुत सारे tools हैं APIs हैं calculator database।",
+      "end": 272.7
+    },
+    {
+      "start": 272.7,
+      "text": "Obviously यार अब मेरा Chat GPT पे अगर मैं डाल रहा हूँ मैंने Chat GPT या Claude पे मैंने डाल दिया अब behind the scene ultimately information तो Goibibo MakeMyTrip या Air India की site पे वहीं से निकलेगी ना तो वो APIs के through directly उनसे जाके interact करके आपको information निकालेगा।",
+      "end": 289.9
+    },
+    {
+      "start": 289.9,
+      "text": "और फिर let's suppose budget बन गया ₹25,000 का आपका ₹20,000 का था तो obviously calculator से compare करेगा कि ज्यादा कम क्या है database से interact करेगा each and everything calendar set करके देगा आपको सारी चीजें।",
+      "end": 302
+    },
+    {
+      "start": 302,
+      "text": "ये काम पूरा का पूरा जो है वो आपका agentic AI करता है और फिर memory में obviously information को save रखेगा अगर first time आपने पूछा है save कर दिया next time आपको जो है वो पुरानी information के हिसाब से बताएगा कि last time आप 3 star में रुके थे या 4 star में रुके थे इस बार आप इसको ऐसे कर सकते हो",
+      "end": 320.3
+    },
+    {
+      "start": 320.3,
+      "text": "आपने ये नहीं किया था इस बार आप इसको नए तरीके से कर सकते हो तो वो सारी चीजें अगर आपने कोई credit card की information डाली है तो save करके रखेगा उन सारे steps को और finally action oriented होता है ये action भी लेता है मतलब decision लेके देगा आपको ये नहीं कि आपको बस information दे दी कि ऐसे ऐसे करके",
+      "end": 338.6
+    },
+    {
+      "start": 338.6,
+      "text": "भाई दिल्ली में चले जाओ वहां पे ये hotels हैं वहां पे देख लेना जाके नहीं देख लेना नहीं सब काम सब action perform करके आपको answer निकाल के देगा और ये जो है वो result oriented रहता है और जब तक इसको वो चीज complete नहीं होती तब तक ये continuity में उस चीज को repeatedly करता रहेगा।",
+      "end": 354.2
+    },
+    {
+      "start": 354.2,
+      "text": "This is all about the agentic AI system अब मैं आपको practically दिखाता हूँ इस चीज को।",
+      "end": 359.3
+    },
+    {
+      "start": 359.3,
+      "text": "ये देखो left side में मैंने normal GPT open किया right side में मेरा जो plus वाला है जिसमें proper agents काम कर रहे हैं देखो left side में मैंने जब सारा डाला कि मेरे को चंडीगढ़ से उदयपुर जाना है उसमें मैंने अपनी preferences सारी चीजें मैंने उसमें डाल दी हैं dates वगैरह hotels की जो भी मेरे को",
+      "end": 376.6
+    },
+    {
+      "start": 376.6,
+      "text": "requirement है तो उसने start कर दिया search करना।",
+      "end": 378.9
+    },
+    {
+      "start": 378.9,
+      "text": "Right side में भी search कर रहा है agents properly काम कर रहे हैं left side में भी सारी traveling hotels सारी information मैंने इसको डाल दिया।",
+      "end": 388
+    },
+    {
+      "start": 388,
+      "text": "और ये उसके basis पे ही मेरे को recommend करेगा कि आप ऐसे-ऐसे करके travel कर सकते हो, आप ऐसे-ऐसे करके hotels में रुक सकते हो।",
+      "end": 393.9
+    },
+    {
+      "start": 393.9,
+      "text": "ये देखो सारी hotels की इसने detail दे दी है, सारी flights की detail दे दी हैं।",
+      "end": 398.8
+    },
+    {
+      "start": 398.8,
+      "text": "लेकिन यहाँ पे important क्या है?",
+      "end": 400.8
+    },
+    {
+      "start": 400.8,
+      "text": "ये मेरे को suggestion दे रहा है।",
+      "end": 403.4
+    },
+    {
+      "start": 403.4,
+      "text": "ये suggestion है, ये recommendation है, ये summary है।",
+      "end": 406.1
+    },
+    {
+      "start": 406.1,
+      "text": "एक तरह से text आ गया कि आप ये चीजें कर सकते हो।",
+      "end": 408.5
+    },
+    {
+      "start": 408.5,
+      "text": "इससे फायदा तो है मेरे को information पता लग गई कि मैं ऐसे-ऐसे करके अपना trip properly plan कर सकता हूं इस budget के अंदर-अंदर।",
+      "end": 414.6
+    },
+    {
+      "start": 414.6,
+      "text": "जैसे मैंने 20,000 budget दिया है।",
+      "end": 416.9
+    },
+    {
+      "start": 416.9,
+      "text": "लेकिन जब मैं बात करता हूं agents की।",
+      "end": 419.5
+    },
+    {
+      "start": 419.5,
+      "text": "तो agents ने ना ऐसा नहीं कि सिर्फ search करना है।",
+      "end": 421.5
+    },
+    {
+      "start": 421.5,
+      "text": "इन्होंने multiple browsers को open करना है।",
+      "end": 424.2
+    },
+    {
+      "start": 424.2,
+      "text": "ये देखो इसने browser open किया यहां पे सबसे पहले flight check कर रहा है ये कि चंडीगढ़ से उदयपुर जाने की जो flight है कौन सी बढ़िया रहेगी date के हिसाब से आपकी preference के हिसाब से पहले वो।",
+      "end": 435.7
+    },
+    {
+      "start": 435.7,
+      "text": "Flight check करेगा। और flight के साथ-साथ इन्होंने hotels को भी check करना start कर दिया है कि कौन से hotels अच्छे हैं।",
+      "end": 441.8
+    },
+    {
+      "start": 441.8,
+      "text": "ऐसा ना हो कि budget के अंदर-अंदर सबसे important है कि calculation कर रहा है यहाँ पे।",
+      "end": 445.8
+    },
+    {
+      "start": 445.8,
+      "text": "सिर्फ आपको suggestion नहीं दे रहा इसको एक goal मिल गया उस goal के हिसाब से उस date के हिसाब से इसने proper plan करना है।",
+      "end": 452.3
+    },
+    {
+      "start": 452.3,
+      "text": "अब देखो यहाँ पे hotels वगैरह सारी information दे रहा है।",
+      "end": 456.6
+    },
+    {
+      "start": 456.6,
+      "text": "और hotel का मतलब ऐसे नहीं कि कुछ भी उठा के गंदे-मंदे hotel दे दिए नहीं।",
+      "end": 459.8
+    },
+    {
+      "start": 459.8,
+      "text": "proper जो है वो 3 star, 4 star, 5 star लेकिन budget के हिसाब से वो निकाल के देगा।",
+      "end": 465.7
+    },
+    {
+      "start": 465.7,
+      "text": "location, sight scene आपने proper करने हैं।",
+      "end": 468.4
+    },
+    {
+      "start": 468.4,
+      "text": "तो location के हिसाब से मेरे को यहां पे hotels वगैरह recommend कर रहा है।",
+      "end": 471.6
+    },
+    {
+      "start": 471.6,
+      "text": "और उसके बाद सबसे important यहाँ पे एक twist निकल के आएगा वो twist ये है कि जब इसको लगा कि यार flight और hotels का 20,000 से ऊपर budget जा रहा है और वापसी पे भी flight महंगी पड़ रही है तो इसने मुझे recommend करना है।",
+      "end": 486.5
+    },
+    {
+      "start": 486.5,
+      "text": "बस का ये देखो ये अब मेरे को बस का कि आप return जो है वो by bus आ जाओ क्योंकि अगर आप by bus आते हो तो आपका जो है वो ₹20,000 के अंदर अंदर ही रहेगा तो देखो goal हुआ।",
+      "end": 497.1
+    },
+    {
+      "start": 497.1,
+      "text": "उसके बाद इसने plan start किया चीजों को करना, planning के बाद ये action ले रहा है।",
+      "end": 500.6
+    },
+    {
+      "start": 500.6,
+      "text": "और जब actions properly ले रहा है, उसके बाद ये feedback भी ले रहा है, मतलब calculation कर रहा है, feedback ले रहा है, तो सिर्फ summary नहीं दे रहा या suggestion नहीं दे रहा, मेरे को सारी information exact निकाल के दे रहा है अलग-अलग browsers पे जाके।",
+      "end": 515.8
+    },
+    {
+      "start": 515.8,
+      "text": "और फिर उसके basis पे सिर्फ एक चीज रह गई है।",
+      "end": 517.4
+    },
+    {
+      "start": 517.4,
+      "text": "payment. बस अगर मैं इसको credit card या अपना UPI वगैरह दे दूँ तो ये payment करके मेरे को tickets और सारी चीजें भेज देगा।",
+      "end": 524.57
+    }
+  ],
+  "keyterms": [
+    "Gate Smashers",
+    "Agentic AI",
+    "Agentic AI explained",
+    "what is Agentic AI",
+    "Agentic AI real life example",
+    "AI agents",
+    "AI explained in Hindi",
+    "Agentic AI in Hindi",
+    "artificial intelligence",
+    "AI technology",
+    "generative AI",
+    "AI vs Agentic AI",
+    "AI for beginners",
+    "computer science",
+    "BTech students",
+    "engineering students",
+    "AI shorts",
+    "technology shorts",
+    "machine learning",
+    "future of AI"
+  ]
+}

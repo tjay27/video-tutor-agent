@@ -1,0 +1,18 @@
+{
+  "videoId": "sample-photosynthesis",
+  "title": "Photosynthesis Explained (sample transcript for local testing)",
+  "language": "en-IN",
+  "source": "manual",
+  "segments": [
+    { "start": 0, "end": 9, "text": "Hi everyone, today we are going to learn how plants make their own food through a process called photosynthesis." },
+    { "start": 9, "end": 21, "text": "Photosynthesis happens mainly in the leaves, inside tiny structures called chloroplasts. Chloroplasts contain a green pigment called chlorophyll." },
+    { "start": 21, "end": 34, "text": "Chlorophyll absorbs sunlight, mostly red and blue light. It reflects green light, which is why leaves look green to us." },
+    { "start": 34, "end": 50, "text": "The plant needs three things: sunlight, water absorbed by the roots, and carbon dioxide which enters through small pores on the leaf called stomata." },
+    { "start": 50, "end": 66, "text": "Using the energy from sunlight, the plant converts carbon dioxide and water into glucose, which is a sugar, and releases oxygen as a by-product." },
+    { "start": 66, "end": 80, "text": "The overall equation is: six carbon dioxide plus six water, in the presence of light, gives one glucose plus six oxygen." },
+    { "start": 80, "end": 97, "text": "Photosynthesis has two stages. The first is the light-dependent reactions, which happen in the thylakoid membranes and produce ATP and NADPH." },
+    { "start": 97, "end": 114, "text": "The second stage is the Calvin cycle, which happens in the stroma. It uses ATP and NADPH to fix carbon dioxide into glucose. It does not need light directly." },
+    { "start": 114, "end": 128, "text": "The glucose is used by the plant for energy, or stored as starch, or used to build cellulose for cell walls." },
+    { "start": 128, "end": 140, "text": "That's it for today. In the next video we will look at respiration, which is kind of the reverse of photosynthesis. Thanks for watching!" }
+  ]
+}

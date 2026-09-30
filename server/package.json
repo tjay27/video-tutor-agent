@@ -1,0 +1,36 @@
+{
+  "name": "video-tutor-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/index.ts",
+    "build": "tsc",
+    "start": "node --env-file=.env dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "smoke": "tsx --env-file=.env scripts/smoke.ts",
+    "call-test": "tsx --env-file=.env scripts/call-test.ts",
+    "import-batch": "tsx scripts/import-batch.ts",
+    "turn-eval": "tsx --env-file=.env scripts/turn-eval.ts",
+    "voice-scenarios": "tsx --env-file=.env scripts/voice-scenarios.ts"
+  },
+  "engines": {
+    "node": ">=20.6"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "multer": "^2.0.0",
+    "sarvamai": "^1.1.10",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.10.0",
+    "@types/ws": "^8.18.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
