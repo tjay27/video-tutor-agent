@@ -2,6 +2,8 @@
 
 Paste a YouTube link, then **talk** to a tutor that answers **only from that video**, in English, Hindi, Hinglish or other Indian languages. Built entirely on **Sarvam AI**.
 
+**🔗 Try it live: [video-tutor-agent.onrender.com](https://video-tutor-agent.onrender.com/)**. Open it in Chrome, pick a video, click **Ask a question** and allow the microphone. The first load can take ~30–60 s while the free server wakes up.
+
 ## Demo
 
 **Talking to the tutor:** interruptions, background chatter, Hinglish, out-of-scope questions
