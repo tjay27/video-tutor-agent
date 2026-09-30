@@ -202,12 +202,46 @@ export class CallSession {
   private noisySentAt = 0;
   private log = createCallLog();
 
+  private limitTimers: NodeJS.Timeout[] = [];
+  private lastActivityAt = Date.now();
+
   constructor(private ws: WebSocket) {
     ws.on("message", (data, isBinary) => {
       if (isBinary) this.onMicAudio(data as Buffer);
       else this.onControl(data.toString());
     });
     ws.on("close", () => this.close());
+    this.startLimits();
+  }
+
+  /**
+   * Hosted demo limits: a maximum session length, and ending the session
+   * after a stretch of silence (realtime STT bills for as long as the mic
+   * stream is open, even when nobody is talking).
+   */
+  private startLimits() {
+    const { maxSessionSeconds, idleSeconds } = config.limits;
+    if (maxSessionSeconds) {
+      this.limitTimers.push(
+        setTimeout(() => this.endForLimit(`Demo sessions are limited to ${Math.round(maxSessionSeconds / 60)} minutes. Start a new one any time.`), maxSessionSeconds * 1000),
+      );
+    }
+    if (idleSeconds) {
+      this.limitTimers.push(
+        setInterval(() => {
+          const busy = this.active || this.browserPlaying || this.pending.length;
+          if (!busy && Date.now() - this.lastActivityAt > idleSeconds * 1000) {
+            this.endForLimit("Session ended after a quiet stretch. Tap “Ask a question” to start again.");
+          }
+        }, 5000),
+      );
+    }
+  }
+
+  private endForLimit(message: string) {
+    this.record("limit", { message });
+    this.send({ type: "limit", message });
+    this.ws.close(1000, "limit");
   }
 
   private send(msg: Record<string, unknown>) {
@@ -392,6 +426,7 @@ export class CallSession {
       case "transcript.final": {
         const { text, language, utterance_idx } = m as SarvamAI.RealtimeTranscriptFinal;
         this.record("stt_final", { utterance: utterance_idx, text, language });
+        if (text.trim()) this.lastActivityAt = Date.now();
         // Sarvam's auto language detection is "sticky": after a few Telugu
         // utterances it writes English in Telugu script. Re-arm detection so
         // every utterance is detected fresh (applies from the next utterance).
@@ -827,6 +862,8 @@ export class CallSession {
   }
 
   private close() {
+    for (const t of this.limitTimers) clearTimeout(t);
+    this.limitTimers = [];
     this.cancelCommit();
     if (this.active) this.cancelTurn(this.active, { merge: false });
     this.tts.close();

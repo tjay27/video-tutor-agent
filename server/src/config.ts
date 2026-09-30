@@ -14,9 +14,23 @@ export const TTS_LANGUAGES: readonly SarvamAI.TextToSpeechLanguage[] = [
 
 const serverRoot = fileURLToPath(new URL("..", import.meta.url));
 
+const num = (v: string | undefined, fallback: number) => (v !== undefined && v !== "" ? Number(v) : fallback);
+// Public deployment (e.g. Render): bundled demo videos only, no debug
+// endpoints, and limits so visitors can't run up the Sarvam bill.
+const hosted = process.env.HOSTED === "true" || process.env.NODE_ENV === "production";
+
 export const config = {
   port: Number(process.env.PORT) || 8787,
   sarvamApiKey: apiKey,
+  hosted,
+
+  // Voice session limits. 0 = no limit. Defaults apply only when hosted.
+  limits: {
+    maxSessionSeconds: num(process.env.MAX_SESSION_SECONDS, hosted ? 300 : 0),
+    idleSeconds: num(process.env.IDLE_SECONDS, hosted ? 90 : 0),
+    maxConcurrentSessions: num(process.env.MAX_CONCURRENT_SESSIONS, hosted ? 3 : 0),
+    maxSessionsPerIpPerDay: num(process.env.MAX_SESSIONS_PER_IP_PER_DAY, hosted ? 8 : 0),
+  },
 
   transcription: {
     ytDlpPath: process.env.YT_DLP_PATH || join(serverRoot, "bin", "yt-dlp"),

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env src/index.ts",
     "build": "tsc",
-    "start": "node --env-file=.env dist/index.js",
+    "start": "node dist/index.js",
+    "start:local": "node --env-file=.env dist/index.js",
     "typecheck": "tsc --noEmit",
     "smoke": "tsx --env-file=.env scripts/smoke.ts",
     "call-test": "tsx --env-file=.env scripts/call-test.ts",

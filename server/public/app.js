@@ -878,6 +878,11 @@ function handleEvent(m) {
       addSys(m.message || "Server error", "error");
       ui.thinking = false;
       break;
+    case "limit":
+      // Hosted demo limits (session length, quiet timeout, busy, daily cap).
+      toast(m.message, "info", 6000);
+      addSys(m.message);
+      break;
     default:
       break; // unknown types are fine
   }
@@ -1213,6 +1218,19 @@ window.__tutorDebug = {
 };
 
 // ---------------------------------------------------------------- boot
+// Hosted demo: no adding videos (YouTube blocks cloud servers), so show the
+// bundled ones instead of the link box.
+fetch("/api/config").then((r) => (r.ok ? r.json() : null)).then((cfg) => {
+  if (!cfg || cfg.canAddVideos) return;
+  $("addForm").hidden = true;
+  const sub = document.querySelector(".hero-sub");
+  if (sub) sub.innerHTML = "Pick a video below and just talk: your tutor answers from the video, in English, Hindi, Hinglish or your own language, and points you to the exact moment.";
+  const note = document.createElement("p");
+  note.className = "hero-note";
+  note.textContent = "This demo includes a few ready videos. To add any YouTube video, run it locally (see the GitHub repo).";
+  $("addForm").after(note);
+}).catch(() => {});
+
 loadLibrary().then(() => {
   if (current && $("videoTitle").textContent === "Loading…") {
     const v = library.find((x) => x.videoId === current.videoId);

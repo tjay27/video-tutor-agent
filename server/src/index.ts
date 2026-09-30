@@ -25,17 +25,35 @@ app.use(express.json({ limit: "10mb" }));
 // The web app (index.html, app.js, app.css).
 app.use(express.static(fileURLToPath(new URL("../public", import.meta.url))));
 
-if (process.env.NODE_ENV !== "production") {
-  // Dev-only: every transcript in fixtures/ preloaded (e.g. the sample video).
-  const fixtures = new URL("../fixtures/", import.meta.url);
-  for (const file of readdirSync(fixtures).filter((f) => f.endsWith(".json"))) {
-    saveTranscript(JSON.parse(readFileSync(new URL(file, fixtures), "utf8")));
-  }
+// Transcripts shipped with the repo (fixtures/), so the app works out of the
+// box. The toy "sample-" transcript has no real video, so it's skipped when hosted.
+const fixtures = new URL("../fixtures/", import.meta.url);
+for (const file of readdirSync(fixtures).filter((f) => f.endsWith(".json"))) {
+  if (config.hosted && file.startsWith("sample-")) continue;
+  saveTranscript(JSON.parse(readFileSync(new URL(file, fixtures), "utf8")));
 }
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, models: { llm: config.llm.model, stt: config.stt.model, tts: config.tts.model } });
 });
+
+// What the UI should offer (e.g. hide "add a video" on the hosted demo).
+app.get("/api/config", (_req, res) => {
+  res.json({ hosted: config.hosted, canAddVideos: !config.hosted, limits: config.limits });
+});
+
+if (config.hosted) {
+  // Hosted demo: no adding videos (YouTube blocks cloud servers and yt-dlp
+  // isn't installed), no public call logs (they contain what visitors said),
+  // and no raw STT/TTS/LLM endpoints that would spend credits outside a session.
+  const blocked = (message: string): express.RequestHandler => (_req, res) => {
+    res.status(403).json({ error: message });
+  };
+  app.post("/api/videos", blocked("Adding new videos is turned off on the hosted demo. Run it locally to add your own."));
+  app.post("/api/transcripts", blocked("Not available on the hosted demo."));
+  app.use("/api/calls", blocked("Not available on the hosted demo."));
+  app.use(["/api/ask", "/api/stt", "/api/tts"], blocked("Not available on the hosted demo."));
+}
 
 app.use("/api/transcripts", transcriptsRouter);
 app.use("/api/calls", callsRouter);
@@ -64,7 +82,7 @@ app.use(errorHandler);
 const cachedCount = await loadCachedTranscripts();
 
 const server = app.listen(config.port, () => {
-  console.log(`Video Tutor API listening on http://localhost:${config.port}`);
+  console.log(`Video Tutor API listening on http://localhost:${config.port}${config.hosted ? " (hosted mode)" : ""}`);
   if (cachedCount) console.log(`Loaded ${cachedCount} cached transcript(s)`);
 });
 attachCallServer(server);
