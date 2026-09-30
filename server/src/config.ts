@@ -2,7 +2,10 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { SarvamAI } from "sarvamai";
 
-const apiKey = process.env.SARVAM_API_KEY;
+// Pasted keys often carry invisible extras (a trailing newline or space,
+// surrounding quotes). Some Sarvam endpoints tolerate them and others reject
+// the key, so clean it once here.
+const apiKey = process.env.SARVAM_API_KEY?.trim().replace(/^["']|["']$/g, "").trim();
 if (!apiKey) {
   console.error("Missing SARVAM_API_KEY. Copy .env.example to .env and add your key.");
   process.exit(1);

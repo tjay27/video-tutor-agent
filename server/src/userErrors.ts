@@ -15,7 +15,7 @@ export function userMessage(e: unknown): string {
     return "Sarvam credits have run out. Top up in the Sarvam dashboard, then try again.";
   }
   if (status === 401 || status === 403 || /invalid (subscription|api) key|unauthori[sz]ed/i.test(text)) {
-    return "The Sarvam API key isn't valid. Check SARVAM_API_KEY in server/.env.";
+    return "The Sarvam API key was rejected. Check SARVAM_API_KEY (server/.env locally, or your host's environment settings).";
   }
   if (status === 429 || /rate limit|too many requests/i.test(text)) {
     return "Too many requests right now. Wait a few seconds and try again.";
