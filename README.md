@@ -6,7 +6,7 @@ Paste a YouTube link, then **talk** to a tutor that answers **only from that vid
 
 **Talking to the tutor:** interruptions, background chatter, Hinglish, out-of-scope questions
 
-[▶ Watch the tutor demo]([docs/demo-video-tutor.mp4](https://drive.google.com/file/d/1h74wq6Zzo-GDLBxNQ62-lXe1JhKVrWAd/view?usp=drive_link))
+[▶ Watch the tutor demo](https://drive.google.com/file/d/1h74wq6Zzo-GDLBxNQ62-lXe1JhKVrWAd/view?usp=drive_link)
 
 
 **Transcribing a new video:** paste a link, and it's ready to talk about in ~40 s
