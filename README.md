@@ -6,11 +6,13 @@ Paste a YouTube link, then **talk** to a tutor that answers **only from that vid
 
 **Talking to the tutor:** interruptions, background chatter, Hinglish, out-of-scope questions
 
-[▶ Watch the tutor demo](docs/demo-video-tutor.mp4)
+[▶ Watch the tutor demo]([docs/demo-video-tutor.mp4](https://drive.google.com/file/d/1h74wq6Zzo-GDLBxNQ62-lXe1JhKVrWAd/view?usp=drive_link))
+
 
 **Transcribing a new video:** paste a link, and it's ready to talk about in ~40 s
 
-[▶ Watch the transcription demo](docs/demo-transcription.mp4)
+[▶ Watch the transcription demo](https://drive.google.com/file/d/1LBWFSGriv9oKw8u1EKP_h062X-kISW4X/view?usp=drive_link)
+
 
 ## What it does
 
